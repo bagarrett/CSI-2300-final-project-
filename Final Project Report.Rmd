@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Predictive Model for Mines Park Fault
 
-#### and Brighton Garrett
+#### Diego Curbelo and Brighton Garrett
 
 ##### Abstract:
 
