@@ -9,7 +9,7 @@ knitr::opts_chunk$set(echo = TRUE)
 
 # Predictive Model for Mines Park Fault
 
-#### By Diego Curbelo and Brighton Garrett
+#### and Brighton Garrett
 
 ##### Abstract:
 
