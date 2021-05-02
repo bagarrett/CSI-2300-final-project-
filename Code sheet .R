@@ -19,6 +19,11 @@ data$dateTime[fault.time]
 #narrowing the data to just before the fault occurred
 data_before_fault <- data[0:fault.time , ]
 
+#plotting the data to see the pH when the fault occured
+ts.plot(data$ras_ph, xlab="Index", ylab="pH")
+abline(v = 20338, col = "blue", lwd = 2)
+abline(h=6.5,col=4,lwd=2)
+
 #narrowing the data to just the prefered columns
 data_edited <- data[, c("bio_1_blow_flow", 
                         "bio_2_blow_flow", 
@@ -65,22 +70,200 @@ pairs(ras_ph ~ ., data = data_secondquarter)
 pairs(ras_ph ~ ., data = data_thirdquarter)
 pairs(ras_ph ~ ., data = data_fourthquarter)
 
+temp_model1 <- lm(ras_ph ~ ., data = data_firstquarter)
+summary(temp_model1)
+plot(temp_model)
+temp_model2 <- lm(ras_ph ~ ., data = data_secondquarter)
+summary(temp_model2)
+temp_model3 <- lm(ras_ph ~ ., data = data_thirdquarter)
+summary(temp_model3)
+temp_model4 <- lm(ras_ph ~ ., data = data_fourthquarter)
+summary(temp_model4)
+
+
+
+data_firstquarter <- data[, c("bio_1_blow_flow", 
+                                           "bio_2_blow_flow", 
+                                           "mbr_1_tmp", 
+                                           "mbr_2_tmp",
+                                           "ras_ph")]
+
+data_secondquarter <- data[,c ("ambient_temp", 
+                                            "bio_1_phase_1", 
+                                            "bio_1_phase_2", 
+                                            "ras_ph")]
+
+data_thirdquarter <- data[, c("bio_2_phase_1",
+                                           "bio_2_phase_2", 
+                                           "mbr_1_mode_1", 
+                                           "mbr_1_mode_2",
+                                           "ras_ph")]
+data_fourthquarter <- data[, c("mbr_1_mode_4",
+                                            "mbr_2_mode_1", 
+                                            "mbr_2_mode_2", 
+                                            "mbr_2_mode_4", 
+                                            "ras_ph")]
+
 #seeing if there is a correlation
 par(mfrow = c(2,2))
 for(i in 1:4){
-  ts.plot(data_firstquarter[,i], xlab = "index")
+  ts.plot(data_firstquarter[,i], xlab = "index",
+          ylab = paste(colnames(data_firstquarter[i])))
   abline(v = 20338, col = "blue", lwd = 2)
 }
 
 
+par(mfrow = c(1,3))
+for(i in 1:3){
+  ts.plot(data_secondquarter[,i], xlab = "index",
+          ylab = paste(colnames(data_secondquarter[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
 
-ts.plot(data$ras_ph, xlab="Index", ylab="pH")
-abline(v = 20338, col = "blue", lwd = 2)
-abline(h=6.5,col=4,lwd=2)
+
+par(mfrow = c(2,2))
+for(i in 1:4){
+  ts.plot(data_thirdquarter[,i], xlab = "index",
+          ylab = paste(colnames(data_thirdquarter[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+
+
+par(mfrow = c(2,2))
+for(i in 1:4){
+  ts.plot(data_fourthquarter[,i], xlab = "index",
+          ylab = paste(colnames(data_fourthquarter[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+
+plot(ras_ph ~ ambient_temp, data = data)
 
 
 
 
+full_model <- lm(ras_ph ~ ., data = data_edited)
+
+summary(full_model)
+
+
+
+BIC_model <- step(full_model, direction="backward", k = log(nrow(data_edited)),
+                  trace = 0)
+summary(BIC_model)
+
+#checking the correlation on the response variables
+
+response_vars <- c("mbr_1_perm_flow", 
+                   "mbr_2_perm_flow", 
+                   "ras_temp",
+                   "bio_1_do", 
+                   "bio_2_do", 
+                   "mbr_1_level", 
+                   "mbr_2_level", 
+                   "perm_turb", 
+                   "sewage_flow", 
+                   "bio_1_level", 
+                   "bio_2_level",
+                   "bio_1_temp", 
+                   "bio_2_temp", 
+                   "bio_1_tss", 
+                   "bio_2_tss", 
+                   "perm_tank_level", 
+                   "ras_do", 
+                   "ras_ph", 
+                   "perm_cond", 
+                   "ras_tss")
+
+
+#seeing a correlation between pH and response variables
+
+response_pairs1 <- data[, response_vars[c(1,2,3,4,5,18)]]
+response_pairs2 <- data[, response_vars[c(6, 7, 8, 9, 10, 18)]]
+response_pairs3 <- data[, response_vars[c(11, 12, 13, 14, 15, 18)]]
+response_pairs4 <- data[, response_vars[c(16, 17, 19, 20, 18)]]
+
+
+pairs(ras_ph ~ ., data = response_pairs1)
+pairs(ras_ph ~ ., data = data_secondquarter)
+pairs(ras_ph ~ ., data = data_thirdquarter)
+pairs(ras_ph ~ ., data = data_fourthquarter)
+
+response_data <- data[, c("mbr_1_perm_flow", 
+                          "mbr_2_perm_flow", 
+                          "ras_temp",
+                          "bio_1_do", 
+                          "bio_2_do", 
+                          "mbr_1_level", 
+                          "mbr_2_level", 
+                          "perm_turb", 
+                          "sewage_flow", 
+                          "bio_1_level", 
+                          "bio_2_level",
+                          "bio_1_temp", 
+                          "bio_2_temp", 
+                          "bio_1_tss", 
+                          "bio_2_tss", 
+                          "perm_tank_level", 
+                          "ras_do", 
+                          "ras_ph", 
+                          "perm_cond", 
+                          "ras_tss")]
+
+data_responsefirstquarter <- data[, c("mbr_1_perm_flow", 
+                                      "mbr_2_perm_flow", 
+                                      "ras_temp",
+                                      "bio_1_do",
+                                      "bio_2_do" )]
+data_responsesecondquarter <- data[, c("mbr_1_level", 
+                                       "mbr_2_level", 
+                                       "perm_turb", 
+                                       "sewage_flow", 
+                                       "bio_1_level")]
+data_responsethirdquarter<- data[, c("bio_2_level",
+                                     "bio_1_temp", 
+                                     "bio_2_temp", 
+                                     "bio_1_tss", 
+                                     "bio_2_tss")]
+data_responsefourthquarter <- data[, c("perm_tank_level", 
+                                       "ras_do", 
+                                       "ras_ph", 
+                                       "perm_cond", 
+                                       "ras_tss")]
+
+par(mfrow = c(2,3))
+for(i in 1:5){
+  ts.plot(data_responsefirstquarter[,i], xlab = "index",
+          ylab = paste(colnames(data_responsefirstquarter[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+
+par(mfrow = c(2,3))
+for(i in 1:5){
+  ts.plot(data_responsesecondquarter[,i], xlab = "index",
+          ylab = paste(colnames(data_responsesecondquarter[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+
+par(mfrow = c(2,3))
+for(i in 1:5){
+  ts.plot(data_responsethirdquarter[,i], xlab = "index",
+          ylab = paste(colnames(data_responsethirdquarter[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+
+par(mfrow = c(2,3))
+for(i in 1:5){
+  ts.plot(data_responsefourthquarter[,i], xlab = "index",
+          ylab = paste(colnames(data_responsefourthquarter[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+
+response_model <- lm(ras_ph ~ . , data = response_data)
+summary(response_model)
+
+BIC_model <- step(response_model, direction="backward", k = log(nrow(response_data)),
+                  trace = 0)
+summary(BIC_model)
 
 
 
