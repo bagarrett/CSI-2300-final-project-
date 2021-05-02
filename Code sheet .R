@@ -65,10 +65,17 @@ pairs(ras_ph ~ ., data = data_secondquarter)
 pairs(ras_ph ~ ., data = data_thirdquarter)
 pairs(ras_ph ~ ., data = data_fourthquarter)
 
+#seeing if there is a correlation
+par(mfrow = c(2,2))
+for(i in 1:4){
+  ts.plot(data_firstquarter[,i], xlab = "index")
+  abline(v = 20338, col = "blue", lwd = 2)
+}
 
 
 
 ts.plot(data$ras_ph, xlab="Index", ylab="pH")
+abline(v = 20338, col = "blue", lwd = 2)
 abline(h=6.5,col=4,lwd=2)
 
 
