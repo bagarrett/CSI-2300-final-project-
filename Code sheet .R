@@ -24,7 +24,14 @@ ts.plot(data$ras_ph, xlab="Index", ylab="pH")
 abline(v = 20338, col = "blue", lwd = 2)
 abline(h=6.5,col=4,lwd=2)
 
-#narrowing the data to just the prefered columns
+complete_model <- lm(ras_ph ~ . , data = data)
+summary(complete_model)
+
+BIC_model <- step(complete_model, direction="backward", k = log(nrow(data)),
+                  trace = 0)
+summary(BIC_model)
+
+#narrowing the data to just the prefered columns for the control variables
 data_edited <- data[, c("bio_1_blow_flow", 
                         "bio_2_blow_flow", 
                         "mbr_1_tmp", 
@@ -70,6 +77,7 @@ pairs(ras_ph ~ ., data = data_secondquarter)
 pairs(ras_ph ~ ., data = data_thirdquarter)
 pairs(ras_ph ~ ., data = data_fourthquarter)
 
+#testing the models as a linear model to see the r squared value
 temp_model1 <- lm(ras_ph ~ ., data = data_firstquarter)
 summary(temp_model1)
 plot(temp_model)
@@ -81,7 +89,7 @@ temp_model4 <- lm(ras_ph ~ ., data = data_fourthquarter)
 summary(temp_model4)
 
 
-
+#changing the data groups to be from the whole data set
 data_firstquarter <- data[, c("bio_1_blow_flow", 
                                            "bio_2_blow_flow", 
                                            "mbr_1_tmp", 
@@ -104,7 +112,7 @@ data_fourthquarter <- data[, c("mbr_1_mode_4",
                                             "mbr_2_mode_4", 
                                             "ras_ph")]
 
-#seeing if there is a correlation
+#seeing if there is a correlation with plots against the time
 par(mfrow = c(2,2))
 for(i in 1:4){
   ts.plot(data_firstquarter[,i], xlab = "index",
@@ -139,14 +147,13 @@ for(i in 1:4){
 plot(ras_ph ~ ambient_temp, data = data)
 
 
-
+#seeing which varaibles make the best model
 
 full_model <- lm(ras_ph ~ ., data = data_edited)
 
 summary(full_model)
 
-
-
+#doing a backwards regressi9on to clear out the variables there don't need to be
 BIC_model <- step(full_model, direction="backward", k = log(nrow(data_edited)),
                   trace = 0)
 summary(BIC_model)
@@ -209,6 +216,7 @@ response_data <- data[, c("mbr_1_perm_flow",
                           "perm_cond", 
                           "ras_tss")]
 
+#splitting the response varaible data
 data_responsefirstquarter <- data[, c("mbr_1_perm_flow", 
                                       "mbr_2_perm_flow", 
                                       "ras_temp",
@@ -229,6 +237,8 @@ data_responsefourthquarter <- data[, c("perm_tank_level",
                                        "ras_ph", 
                                        "perm_cond", 
                                        "ras_tss")]
+
+#graphing to visually see correlation between response variables and time
 
 par(mfrow = c(2,3))
 for(i in 1:5){
@@ -258,6 +268,7 @@ for(i in 1:5){
   abline(v = 20338, col = "blue", lwd = 2)
 }
 
+#making a linear mode with the response varaibles
 response_model <- lm(ras_ph ~ . , data = response_data)
 summary(response_model)
 
@@ -265,6 +276,7 @@ BIC_model <- step(response_model, direction="backward", k = log(nrow(response_da
                   trace = 0)
 summary(BIC_model)
 
+#setting out the best variables
 best_variables <- c("mbr_1_perm_flow",
                     "ras_temp",
                     "bio_1_do" ,
@@ -286,7 +298,7 @@ best_variables <- c("mbr_1_perm_flow",
 
 best_data <- response_data[, best_variables]
 
-
+#testing various r-squared values
 test_model <- lm(ras_ph ~ bio_1_temp, data = response_data)
 summary(test_model)
 
@@ -304,6 +316,7 @@ summary(test_model)
 test_model <- lm(ras_ph ~ bio_1_temp + bio_2_temp + perm_cond + ras_temp, data = response_data)
 summary(test_model)
 
+
 best_model <- lm(formula = ras_ph ~ mbr_1_perm_flow + ras_temp + bio_1_do + 
                    bio_2_do + mbr_2_level + perm_turb + sewage_flow + bio_1_level + 
                    bio_2_level + bio_1_temp + bio_2_temp + bio_1_tss + bio_2_tss + 
@@ -311,6 +324,8 @@ best_model <- lm(formula = ras_ph ~ mbr_1_perm_flow + ras_temp + bio_1_do +
 summary(best_model)
 
 plot(best_model)
+
+#plotting the chosen best variables
 
 data_best_1 <- data[, c("mbr_1_perm_flow",
                         "ras_temp",
@@ -355,4 +370,22 @@ for(i in 1:4){
   abline(v = 20338, col = "blue", lwd = 2)
 }
 
+plot(best_model)
 
+round(coef(best_model), 3)
+
+
+suppressMessages(library(glmnet))
+filtered_data <- which((colnames(response_data) == "ras_ph"))
+y <- data$ras_ph
+x <- as.matrix(response_data[, -filtered_data])
+lasso_fit <- cv.glmnet(x, y)
+round(coef(lasso_fit), 3)
+
+lasso_predictions <- predict(lasso_fit, newx=x)
+lasso_residuals <- lasso_predictions - y
+SSR <- sum(lasso_residuals ^ 2)
+mean_ph_price <- mean(data$ras_ph)
+SST <- sum((data$ras_ph - mean_ph_price) ^ 2)
+R2 <- 1 - SSR / SST
+R2
