@@ -129,6 +129,9 @@ for(i in 1:4){
 
 plot(ras_ph ~ ambient_temp, data = data)
 
+ambient_model <- lm(ras_ph ~ ambient_temp, data = data)
+summary(ambient_model)
+
 
 #seeing which varaibles make the best model
 

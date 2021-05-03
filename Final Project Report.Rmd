@@ -1,25 +1,27 @@
 ---
-title: "Final"
+title: "Predictive Model for Mines Park Fault"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
 knitr::opts_chunk$set(
-  comment = "#", fig.height = 4, 
+  comment = "#",
   cache = FALSE,  collapse = TRUE,
   error = TRUE
 )
 ```
 
-# Predictive Model for Mines Park Fault
+##### by Diego Curbelo and Brighton Garrett
 
-#### Diego Curbelo and Brighton Garrett
+### Abstract:
 
-##### Abstract:
+In this paper, data from a decentralized treatment facility was looked at. There was a fault in the study where the pH dropped below 6.5 which killed the biological components of the facility that treat the water. The purpose of this paper is to detect a way to find the fault before it happens. We found, through linear regression, scatter plots, and pair functions, that 16 response variables predicted this best.
 
-##### Introduction:
+### Introduction:
 
 This data was taken from a case study at mines park. This study looked at a decentralized treatment facility that requires vigilant monitoring to mitigate risks to system, human, and environmental health. It consists of 43,552 measurements of 42 variables that were taken every 10 minutes from April 10, 2010 at 6:10 AM to May 11, 2010 at 5:00 AM. The observations showed a fault in the system that is displayed in Figure 1. When the pH drops below the blue line, it is no longer safe for the In this figure, there is a large decrease in the pH and it had to go through three different additions of a buffer solution to recover. The purpose of our work is to find a model that will detect a fault of this sort earlier than it happens. To do this we looked at the of the pH of the water with the other 41 different models. We found the variables that had a good correlation and used this as an indicator for when the pH is going to suddenly drop which would alert the facility.
+
+###### Figure 1:
 
 ```{r, echo=FALSE, results = FALSE}
 data <- read.csv("Mines_Park_pH_Fault.csv", stringsAsFactors = FALSE)
@@ -47,128 +49,144 @@ abline(h=6.5,col=4,lwd=2)
 abline(v=fault.time,col=2,lwd=2)
 ```
 
-##### Methods:
+### Methods:
 
-To begin, we loaded in the data and found the exact date where the fault happened. We then used a linear regression model and then a backwards step regression to find the coefficients of all the variables that were most correlated to the pH. The formula that was produced by this (original_model = ras_ph \~ bio_1\_blow_flow + bio_2\_blow_flow + mbr_2\_tmp + ambient_temp + bio_1\_phase_2 + bio_2\_phase_2 + mbr_2\_mode_1 + mbr_2\_mode_4) Then we split the variables into control and response variables so we could compare them to the pH. After this, we split the variables of the data into a control and response variable set. We used these sets to further look at different formulas and how much they correlated with the pH. We did this by splitting the data into smaller portions to make it more workable since there are over 40,000 observations. For both the control and response variables we used to the pairs function to make a scatterplot of the variables against the pH to see if the pH was strongly correlated with any other variable(figures 3 and 4), plotted the variables against time to see if there was a trend in the graph right before the fault (figures 5 and 6), made a linear model and performed a backwards regression to see which variables were correlated the most with the pH, and performed a lasso fit to see if it had a better r-squared than the previous liner model.
+To begin, we loaded in the data and found the exact date where the fault happened. We then used a linear regression model and then a backwards step regression to find the coefficients of all the variables that were most correlated to the pH. Then we split the variables into control and response variables so we could compare them to the pH. After this, we split the variables of the data into a control and response variable set. We used these sets to further look at different formulas and how much they correlated with the pH. We did this by splitting the data into smaller portions to make it more workable since there are over 40,000 observations. For both the control and response variables we used to the pairs function to make a scatter plot of the variables against the pH to see if the pH was strongly correlated with any other variable, plotted the variables against time to see if there was a trend in the graph right before the fault (figures 2 and 2), made a linear model and performed a backwards regression to see which variables were correlated the most with the pH, and performed a lasso fit to see if it had a better r-squared than the previous liner model.
 
-Figure 5:
+###### Figure 2:
 
-```{r, echo=FALSE}
-data_firstquarter <- data[, c("bio_1_blow_flow", 
-                                           "bio_2_blow_flow", 
-                                           "mbr_1_tmp", 
-                                           "mbr_2_tmp",
-                                           "ras_ph")]
-
-data_secondquarter <- data[,c ("ambient_temp", 
-                                            "bio_1_phase_1", 
-                                            "bio_1_phase_2", 
-                                            "ras_ph")]
-
-data_thirdquarter <- data[, c("bio_2_phase_1",
-                                           "bio_2_phase_2", 
-                                           "mbr_1_mode_1", 
-                                           "mbr_1_mode_2",
-                                           "ras_ph")]
-data_fourthquarter <- data[, c("mbr_1_mode_4",
-                                            "mbr_2_mode_1", 
-                                            "mbr_2_mode_2", 
-                                            "mbr_2_mode_4", 
-                                            "ras_ph")]
-
-
-par(mfrow = c(2,2))
-for(i in 1:4){
-  ts.plot(data_firstquarter[,i], xlab = "index",
-          ylab = paste(colnames(data_firstquarter[i])))
-  abline(v = 20338, col = "blue", lwd = 2)
+```{r, echo=FALSE, fig.width = 10, fig.height= 6}
+data_edited <- data[, c("bio_1_blow_flow", 
+                        "bio_2_blow_flow", 
+                        "mbr_1_tmp", 
+                        "mbr_2_tmp",
+                        "ambient_temp", 
+                        "bio_1_phase_1", 
+                        "bio_1_phase_2", 
+                        "bio_2_phase_1",
+                        "bio_2_phase_2", 
+                        "mbr_1_mode_1", 
+                        "mbr_1_mode_2", 
+                        "mbr_1_mode_4",
+                        "mbr_2_mode_1", 
+                        "mbr_2_mode_2", 
+                        "mbr_2_mode_4", 
+                        "ras_ph")]
+par(mfrow = c(3,5))
+for(i in 1:15){
+  ts.plot(data_edited[,i], xlab = "index",
+          ylab = paste(colnames(data_edited[i])))
+  abline(v = 20338, col = "red", lwd = 2)
 }
 
-
-par(mfrow = c(2,2))
-for(i in 1:3){
-  ts.plot(data_secondquarter[,i], xlab = "index",
-          ylab = paste(colnames(data_secondquarter[i])))
-  abline(v = 20338, col = "blue", lwd = 2)
-}
-
-
-par(mfrow = c(2,2))
-for(i in 1:4){
-  ts.plot(data_thirdquarter[,i], xlab = "index",
-          ylab = paste(colnames(data_thirdquarter[i])))
-  abline(v = 20338, col = "blue", lwd = 2)
-}
-
-
-par(mfrow = c(2,2))
-for(i in 1:4){
-  ts.plot(data_fourthquarter[,i], xlab = "index",
-          ylab = paste(colnames(data_fourthquarter[i])))
-  abline(v = 20338, col = "blue", lwd = 2)
-}
 ```
 
-Figure 6:
+###### Figure 3:
+
+```{r, echo=FALSE, fig.width = 10, fig.height= 10}
+response_data <- data[, c("mbr_1_perm_flow", 
+                          "mbr_2_perm_flow", 
+                          "ras_temp",
+                          "bio_1_do", 
+                          "bio_2_do", 
+                          "mbr_1_level", 
+                          "mbr_2_level", 
+                          "perm_turb", 
+                          "sewage_flow", 
+                          "bio_1_level", 
+                          "bio_2_level",
+                          "bio_1_temp", 
+                          "bio_2_temp", 
+                          "bio_1_tss", 
+                          "bio_2_tss", 
+                          "perm_tank_level", 
+                          "ras_do", 
+                          "perm_cond", 
+                          "ras_tss", 
+                          "ras_ph")]
+par(mfrow = c(4,5))
+for(i in 1:20){
+  ts.plot(response_data[,i], xlab = "index",
+          ylab = paste(colnames(response_data[i])))
+  abline(v = 20338, col = "red", lwd = 2)
+}
+
+```
+
+### Results:
+
+Through these methods, we found that the response variables are a better predictor for the pH than the control variables. The r-squared for the control variables never got higher than 0.1. The most visually correlated variables were the ambient temperature and ras_ph as shown by figure 4 which shows both drops have a steep decline around the 20000 index, but the r-squared value for the correlation between the pH and ambient temperature was 0.03216.These low r-squared values ruled out most of the control variables in being predictors for the fault. For the response variables, the scatter plots against time tells us that right before the pH drops the RAS temp drops, MBR 1 level drops, MBR 2 level drops, Bio 1 temp drops, Bio 2 temp drops, RAS pH begins to drop, and the permeate conductivity drops as shown in figure 5. The linear regression model chose the variables mbr_1\_perm_flow, ras_temp, bio_1\_do, bio_2\_do, mbr_2\_level, perm_turb, sewage_flow, bio_1\_level, bio_2\_level, bio_1\_temp, bio_2\_temp, bio_1\_tss, bio_2\_tss, ras_do, perm_cond, and ras_tss. The scatter plots for these graphs are shown in figure 6. The r-squared value for this was 0.5452. Then the lasso fit model chose the variables mbr_1\_perm_flow, ras_temp, bio_1\_do, bio_2\_do, mbr_2\_level, perm_turb, bio_1\_level, bio_2\_level, bio_2\_temp, bio_1\_tss, ras_do, perm_cond, and 0.5414269, however the bio_1\_tss, bio_2\_tss, and ras_tss had a slope of 0. The variables that differed in the lasso from the linear model were sewage_flow and bio_1\_temp. The r-squared value for the lasso fit was 0.5414269 which was lower than the linear model. This lead to the linear model having the highest r-squared and greatest predictions for the fault.
+
+###### Figure 4:
 
 ```{r, echo=FALSE}
+par(mfrow = c(1,2))
+ts.plot(data$ambient_temp, xlab = "Date in Days", ylab = "Ambient Temp")
+abline(h=6.5,col=4,lwd=2)
+abline(v=fault.time,col=2,lwd=2)
 
-data_responsefirstquarter <- data[, c("mbr_1_perm_flow", 
-                                      "mbr_2_perm_flow", 
-                                      "ras_temp",
-                                      "bio_1_do",
-                                      "bio_2_do" )]
-data_responsesecondquarter <- data[, c("mbr_1_level", 
-                                       "mbr_2_level", 
-                                       "perm_turb", 
-                                       "sewage_flow", 
-                                       "bio_1_level")]
-data_responsethirdquarter<- data[, c("bio_2_level",
-                                     "bio_1_temp", 
-                                     "bio_2_temp", 
-                                     "bio_1_tss", 
-                                     "bio_2_tss")]
-data_responsefourthquarter <- data[, c("perm_tank_level", 
-                                       "ras_do", 
-                                       "ras_ph", 
-                                       "perm_cond", 
-                                       "ras_tss")]
+ts.plot(data$ras_ph, xlab="Date in Days", ylab="pH")
+abline(h=6.5,col=4,lwd=2)
+abline(v=fault.time,col=2,lwd=2)
+
+
+```
+
+###### Figure 5:
+
+```{r, echo=FALSE, fig.width = 10, fig.height= 6}
+
+data_best_visual <- data[, c("ras_temp",
+                             "mbr_1_level",
+                             "mbr_2_level",
+                             "bio_1_temp",
+                             "bio_2_temp",
+                             "ras_ph", 
+                              "perm_cond")]
 
 #graphing to visually see correlation between response variables and time
 
-par(mfrow = c(2,3))
-for(i in 1:5){
-  ts.plot(data_responsefirstquarter[,i], xlab = "index",
-          ylab = paste(colnames(data_responsefirstquarter[i])))
-  abline(v = 20338, col = "blue", lwd = 2)
+par(mfrow = c(2,4))
+for(i in 1:7){
+  ts.plot(data_best_visual[,i], xlab = "index",
+          ylab = paste(colnames(data_best_visual[i])))
+  abline(v = 20338, col = "red", lwd = 2)
 }
 
-par(mfrow = c(2,3))
-for(i in 1:5){
-  ts.plot(data_responsesecondquarter[,i], xlab = "index",
-          ylab = paste(colnames(data_responsesecondquarter[i])))
-  abline(v = 20338, col = "blue", lwd = 2)
-}
 
-par(mfrow = c(2,3))
-for(i in 1:5){
-  ts.plot(data_responsethirdquarter[,i], xlab = "index",
-          ylab = paste(colnames(data_responsethirdquarter[i])))
-  abline(v = 20338, col = "blue", lwd = 2)
-}
+```
 
-par(mfrow = c(2,3))
-for(i in 1:5){
-  ts.plot(data_responsefourthquarter[,i], xlab = "index",
-          ylab = paste(colnames(data_responsefourthquarter[i])))
-  abline(v = 20338, col = "blue", lwd = 2)
+###### Figure 6:
+
+```{r, echo=FALSE, fig.width = 10, fig.height= 10}
+
+
+best_data <- response_data[, c("mbr_1_perm_flow",
+                    "ras_temp",
+                    "bio_1_do" ,
+                      "bio_2_do" ,
+                    "mbr_2_level",
+                     "perm_turb" ,
+                    "sewage_flow" ,
+                    "bio_1_level" ,
+                      "bio_2_level" ,
+                    "bio_1_temp" ,
+                    "bio_2_temp" ,
+                    "bio_1_tss" ,
+                    "bio_2_tss" ,
+                    "ras_do" ,
+                    "perm_cond" ,
+                    "ras_tss",
+                    "ras_ph")]
+
+par(mfrow = c(4,4))
+for(i in 1:16){
+  ts.plot(best_data[,i], xlab = "index",
+          ylab = paste(colnames(best_data[i])))
+  abline(v = 20338, col = "red", lwd = 2)
 }
 ```
 
-##### Results:
+### Discussion:
 
-Through these methods, we found that the response variables are a better predictor for the pH than the control variables. The r-squared for the control variables never got higher than 0.1. For the response variables, the scatterplots against time tells us that right before the pH drops the RAS drops, MBR 1 level drops, MBR 2 level drops, Bio 1 temp drops, Bio 2 temp drops, RAS pH begins to drop, and the permeate conductivity drops. The linear regression model chooses the variables mbr_1\_perm_flow, ras_temp, bio_1\_do, bio_2\_do, mbr_2\_level, perm_turb, sewage_flow, bio_1\_level, bio_2\_level, bio_1\_temp, bio_2\_temp, bio_1\_tss, bio_2\_tss, ras_do, perm_cond, ras_tss, ras_ph. The r-squared value for this was . Then the r-squared value for the lasso fit was which was lower than the linear model. This lead to the linear model having the highest r-squared and greatest predictions for the fault.
-
-##### Discussion:
-
-To use this information to predict when the fault will be before it happens, the facility can look at the variables chosen by the linear model and the ones that correlate with the pH dropping from the scatter plots. Then when these begin to drop, the facility cqan take pr4eventitive actions to stop the pH from dropping below 6.5.
+To use this information to predict when the fault will be before it happens, the facility can look at the variables chosen by the linear model and the ones that correlate with the pH dropping from the scatter plots. Then when these begin to drop, the facility can take preventative actions to stop the pH from dropping below 6.5. Some questions raised from these findings were do any of these response variables directly change the pH and is this just a one time correlation or do they actually relate? Since there is only one fault recorded in the data it is hard to draw a certain conclusion on whether or no these variables are correlated by chance or actually correlated.
