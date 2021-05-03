@@ -77,17 +77,6 @@ pairs(ras_ph ~ ., data = data_secondquarter)
 pairs(ras_ph ~ ., data = data_thirdquarter)
 pairs(ras_ph ~ ., data = data_fourthquarter)
 
-#testing the models as a linear model to see the r squared value
-temp_model1 <- lm(ras_ph ~ ., data = data_firstquarter)
-summary(temp_model1)
-plot(temp_model)
-temp_model2 <- lm(ras_ph ~ ., data = data_secondquarter)
-summary(temp_model2)
-temp_model3 <- lm(ras_ph ~ ., data = data_thirdquarter)
-summary(temp_model3)
-temp_model4 <- lm(ras_ph ~ ., data = data_fourthquarter)
-summary(temp_model4)
-
 
 #changing the data groups to be from the whole data set
 data_firstquarter <- data[, c("bio_1_blow_flow", 
@@ -191,9 +180,9 @@ response_pairs4 <- data[, response_vars[c(16, 17, 19, 20, 18)]]
 
 
 pairs(ras_ph ~ ., data = response_pairs1)
-pairs(ras_ph ~ ., data = data_secondquarter)
-pairs(ras_ph ~ ., data = data_thirdquarter)
-pairs(ras_ph ~ ., data = data_fourthquarter)
+pairs(ras_ph ~ ., data = response_pairs2)
+pairs(ras_ph ~ ., data = response_pairs3)
+pairs(ras_ph ~ ., data = response_pairs4)
 
 response_data <- data[, c("mbr_1_perm_flow", 
                           "mbr_2_perm_flow", 
