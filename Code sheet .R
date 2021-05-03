@@ -265,9 +265,94 @@ BIC_model <- step(response_model, direction="backward", k = log(nrow(response_da
                   trace = 0)
 summary(BIC_model)
 
+best_variables <- c("mbr_1_perm_flow",
+                    "ras_temp",
+                    "bio_1_do" ,
+                      "bio_2_do" ,
+                    "mbr_2_level",
+                     "perm_turb" ,
+                    "sewage_flow" ,
+                    "bio_1_level" ,
+                      "bio_2_level" ,
+                    "bio_1_temp" ,
+                    "bio_2_temp" ,
+                    "bio_1_tss" ,
+                    "bio_2_tss" ,
+                    "ras_do" ,
+                    "perm_cond" ,
+                    "ras_tss",
+                    "ras_ph")
+
+
+best_data <- response_data[, best_variables]
+
+
+test_model <- lm(ras_ph ~ bio_1_temp, data = response_data)
+summary(test_model)
 
 
 
+test_model <- lm(ras_ph ~ bio_2_temp, data = response_data)
+summary(test_model)
 
+test_model <- lm(ras_ph ~ perm_cond, data = response_data)
+summary(test_model)
+
+test_model <- lm(ras_ph ~ ras_temp, data = response_data)
+summary(test_model)
+
+test_model <- lm(ras_ph ~ bio_1_temp + bio_2_temp + perm_cond + ras_temp, data = response_data)
+summary(test_model)
+
+best_model <- lm(formula = ras_ph ~ mbr_1_perm_flow + ras_temp + bio_1_do + 
+                   bio_2_do + mbr_2_level + perm_turb + sewage_flow + bio_1_level + 
+                   bio_2_level + bio_1_temp + bio_2_temp + bio_1_tss + bio_2_tss + 
+                   ras_do + perm_cond + ras_tss, data = response_data)
+summary(best_model)
+
+plot(best_model)
+
+data_best_1 <- data[, c("mbr_1_perm_flow",
+                        "ras_temp",
+                        "bio_1_do" ,
+                        "bio_2_do")]
+data_best_2 <- data[, c("mbr_2_level",
+                        "perm_turb" ,
+                        "sewage_flow" ,
+                        "bio_1_level")]
+data_best_3 <- data[, c("bio_2_level" ,
+                        "bio_1_temp" ,
+                        "bio_2_temp" ,
+                        "bio_1_tss")]
+data_best_4 <- data[, c("bio_2_tss" ,
+                    "ras_do" ,
+                    "perm_cond" ,
+                    "ras_tss")]
+
+
+par(mfrow = c(2,2))
+for(i in 1:4){
+  ts.plot(data_best_1[,i], xlab = "index",
+          ylab = paste(colnames(data_best_1[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+par(mfrow = c(2,2))
+for(i in 1:4){
+  ts.plot(data_best_2[,i], xlab = "index",
+          ylab = paste(colnames(data_best_2[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+par(mfrow = c(2,2))
+for(i in 1:4){
+  ts.plot(data_best_3[,i], xlab = "index",
+          ylab = paste(colnames(data_best_3[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
+par(mfrow = c(2,2))
+for(i in 1:4){
+  ts.plot(data_best_4[,i], xlab = "index",
+          ylab = paste(colnames(data_best_4[i])))
+  abline(v = 20338, col = "blue", lwd = 2)
+}
 
 
