@@ -1,10 +1,14 @@
 ---
-title: "Project Report"
+title: "Final"
 output: html_document
 ---
 
 ```{r setup, include=FALSE}
-knitr::opts_chunk$set(echo = TRUE)
+knitr::opts_chunk$set(
+  comment = "#", fig.height = 4, 
+  cache = FALSE,  collapse = TRUE,
+  error = TRUE
+)
 ```
 
 # Predictive Model for Mines Park Fault
@@ -13,16 +17,15 @@ knitr::opts_chunk$set(echo = TRUE)
 
 ##### Abstract:
 
-##### Introduction: 
-This data was taken from a case study at mines park. This study looked at a decentralized treatment facility that requires vigilant monitoring to
-mitigate risks to system, human, and environmental health. It consists of 43,552 measurements of 42 variables that were taken every 10 minutes from April 10, 2010 at 6:10 AM to May 11, 2010 at 5:00 AM. The observations showed a fault in the system that is displayed in Figure 1. When the pH drops below the blue line, it is no longer safe for the  In this figure, there is a large decrease in the pH and it had to go through three different additions of a buffer solution to recover. The purpose of our work is to find a model that will detect a fault of this sort earlier than it happens. To do this we looked at the of the pH of the water with the other 41 different models. We found the variables that had a good correlation and used this as an indicator for when the pH is going to suddenly drop which would alert the facility. 
+##### Introduction:
 
-```{r, echo=FALSE}
+This data was taken from a case study at mines park. This study looked at a decentralized treatment facility that requires vigilant monitoring to mitigate risks to system, human, and environmental health. It consists of 43,552 measurements of 42 variables that were taken every 10 minutes from April 10, 2010 at 6:10 AM to May 11, 2010 at 5:00 AM. The observations showed a fault in the system that is displayed in Figure 1. When the pH drops below the blue line, it is no longer safe for the In this figure, there is a large decrease in the pH and it had to go through three different additions of a buffer solution to recover. The purpose of our work is to find a model that will detect a fault of this sort earlier than it happens. To do this we looked at the of the pH of the water with the other 41 different models. We found the variables that had a good correlation and used this as an indicator for when the pH is going to suddenly drop which would alert the facility.
+
+```{r, echo=FALSE, results = FALSE}
 data <- read.csv("Mines_Park_pH_Fault.csv", stringsAsFactors = FALSE)
 attr(data$dateTime, "tzone") <- "America/Denver"
 
-library(lubridate)
-
+suppressMessages(library(lubridate))
 
 #finding where the fault occurred and what row the observation is at
 colnames(data)
@@ -39,82 +42,17 @@ data$dateTime[fault.time]
 #narrowing the data to just before the fault occurred
 data_before_fault <- data[0:fault.time , ]
 
-ts.plot(data$ras_ph, xlab="Date in days", ylab="pH", main = "pH Levels", sub = "Figure 1")
-abline(v = 20338, col = "red", lwd = 2)
+ts.plot(data$ras_ph, xlab="Index", ylab="pH")
 abline(h=6.5,col=4,lwd=2)
+abline(v=fault.time,col=2,lwd=2)
 ```
 
 ##### Methods:
-To begin, we loaded in the data and found the exact date where the fault happened. We then used a linear regression model and then a backwards step regression to find the coefficients of all the variables that were most correlated to the pH. The formula that was produced by this
-(original_model = ras_ph ~ bio_1_blow_flow + bio_2_blow_flow + mbr_2_tmp + 
-                  ambient_temp + bio_1_phase_2 + bio_2_phase_2 + mbr_2_mode_1
-                  + mbr_2_mode_4) 
-Then we split the variables into control and response variables so we could compare them to the pH. After this, we split the variables of the data into a control and response variable set. We used these sets to further look at different formulas and how much they correlated with the pH. We did this by splitting the data into smaller portions to make it more workable since there are over 40,000 observations. For both the control and response variables we used to the pairs function to make a scatterplot of the variables against the pH to see if the pH was strongly correlated with any other variable(figures 3 and 4), plotted the variables against time to see if there was a trend in the graph right before the fault (figures 5 and 6), made a linear model and performed a backwards regression to see which variables were correlated the most with the pH, and performed a lasso fit to see if it had a better r-squared than the previous liner model. 
 
-Figure 3:
-```{r, echo=FALSE}
-data_firstquarter <- data_before_fault[, c("bio_1_blow_flow", 
-                           "bio_2_blow_flow", 
-                           "mbr_1_tmp", 
-                           "mbr_2_tmp",
-                           "ras_ph")]
-                           
-data_secondquarter <- data_before_fault[,c ("ambient_temp", 
-                              "bio_1_phase_1", 
-                              "bio_1_phase_2", 
-                              "ras_ph")]
+To begin, we loaded in the data and found the exact date where the fault happened. We then used a linear regression model and then a backwards step regression to find the coefficients of all the variables that were most correlated to the pH. The formula that was produced by this (original_model = ras_ph \~ bio_1\_blow_flow + bio_2\_blow_flow + mbr_2\_tmp + ambient_temp + bio_1\_phase_2 + bio_2\_phase_2 + mbr_2\_mode_1 + mbr_2\_mode_4) Then we split the variables into control and response variables so we could compare them to the pH. After this, we split the variables of the data into a control and response variable set. We used these sets to further look at different formulas and how much they correlated with the pH. We did this by splitting the data into smaller portions to make it more workable since there are over 40,000 observations. For both the control and response variables we used to the pairs function to make a scatterplot of the variables against the pH to see if the pH was strongly correlated with any other variable(figures 3 and 4), plotted the variables against time to see if there was a trend in the graph right before the fault (figures 5 and 6), made a linear model and performed a backwards regression to see which variables were correlated the most with the pH, and performed a lasso fit to see if it had a better r-squared than the previous liner model.
 
-data_thirdquarter <- data_before_fault[, c("bio_2_phase_1",
-                           "bio_2_phase_2", 
-                           "mbr_1_mode_1", 
-                           "mbr_1_mode_2",
-                           "ras_ph")]
-data_fourthquarter <- data_before_fault[, c("mbr_1_mode_4",
-                               "mbr_2_mode_1", 
-                               "mbr_2_mode_2", 
-                               "mbr_2_mode_4", 
-                               "ras_ph")]
-pairs(ras_ph ~ ., data = data_secondquarter)
-pairs(ras_ph ~ ., data = data_thirdquarter)
-pairs(ras_ph ~ ., data = data_fourthquarter)
-```
-Figure 4:
-```{r, echo=FALSE}
-response_vars <- c("mbr_1_perm_flow", 
-                   "mbr_2_perm_flow", 
-                   "ras_temp",
-                   "bio_1_do", 
-                   "bio_2_do", 
-                   "mbr_1_level", 
-                   "mbr_2_level", 
-                   "perm_turb", 
-                   "sewage_flow", 
-                   "bio_1_level", 
-                   "bio_2_level",
-                   "bio_1_temp", 
-                   "bio_2_temp", 
-                   "bio_1_tss", 
-                   "bio_2_tss", 
-                   "perm_tank_level", 
-                   "ras_do", 
-                   "ras_ph", 
-                   "perm_cond", 
-                   "ras_tss")
-
-
-#seeing a correlation between pH and response variables
-
-response_pairs1 <- data[, response_vars[c(1,2,3,4,5,18)]]
-response_pairs2 <- data[, response_vars[c(6, 7, 8, 9, 10, 18)]]
-response_pairs3 <- data[, response_vars[c(11, 12, 13, 14, 15, 18)]]
-response_pairs4 <- data[, response_vars[c(16, 17, 19, 20, 18)]]
-
-pairs(ras_ph ~ ., data = response_pairs1)
-pairs(ras_ph ~ ., data = response_pairs2)
-pairs(ras_ph ~ ., data = response_pairs3)
-pairs(ras_ph ~ ., data = response_pairs4)
-```
 Figure 5:
+
 ```{r, echo=FALSE}
 data_firstquarter <- data[, c("bio_1_blow_flow", 
                                            "bio_2_blow_flow", 
@@ -171,8 +109,8 @@ for(i in 1:4){
 }
 ```
 
-
 Figure 6:
+
 ```{r, echo=FALSE}
 
 data_responsefirstquarter <- data[, c("mbr_1_perm_flow", 
@@ -227,7 +165,10 @@ for(i in 1:5){
 }
 ```
 
-
 ##### Results:
 
+Through these methods, we found that the response variables are a better predictor for the pH than the control variables. The r-squared for the control variables never got higher than 0.1. For the response variables, the scatterplots against time tells us that right before the pH drops the RAS drops, MBR 1 level drops, MBR 2 level drops, Bio 1 temp drops, Bio 2 temp drops, RAS pH begins to drop, and the permeate conductivity drops. The linear regression model chooses the variables mbr_1\_perm_flow, ras_temp, bio_1\_do, bio_2\_do, mbr_2\_level, perm_turb, sewage_flow, bio_1\_level, bio_2\_level, bio_1\_temp, bio_2\_temp, bio_1\_tss, bio_2\_tss, ras_do, perm_cond, ras_tss, ras_ph. The r-squared value for this was . Then the r-squared value for the lasso fit was which was lower than the linear model. This lead to the linear model having the highest r-squared and greatest predictions for the fault.
+
 ##### Discussion:
+
+To use this information to predict when the fault will be before it happens, the facility can look at the variables chosen by the linear model and the ones that correlate with the pH dropping from the scatter plots. Then when these begin to drop, the facility cqan take pr4eventitive actions to stop the pH from dropping below 6.5.

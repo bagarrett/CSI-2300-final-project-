@@ -24,12 +24,6 @@ ts.plot(data$ras_ph, xlab="Index", ylab="pH")
 abline(v = 20338, col = "blue", lwd = 2)
 abline(h=6.5,col=4,lwd=2)
 
-complete_model <- lm(ras_ph ~ . , data = data)
-summary(complete_model)
-
-BIC_model <- step(complete_model, direction="backward", k = log(nrow(data)),
-                  trace = 0)
-summary(BIC_model)
 
 #narrowing the data to just the prefered columns for the control variables
 data_edited <- data[, c("bio_1_blow_flow", 
